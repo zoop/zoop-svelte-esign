@@ -1,20 +1,9 @@
-<script>
+<script lang="ts">
+	export let nextStep: () => void;
+
 	import { ChevronLeft } from "@lucide/svelte";
-	import { Button } from "@zoop-svelte/svelte-components";
-	import PrimaryButton from "../Components/Button/PrimaryButton.svelte";
-
-	function handleRedirect() {
-		window.location.href = "/viewer";
-	}
+	import PrimaryButton from "../Button/PrimaryButton.svelte";
 </script>
-
-<div
-	class="hidden md:flex items-center justify-start gap-4 shadow-md z-10 px-6 py-4 w-full"
->
-	<img src="static/assets/zoop.svg" alt="Zoop Logo" class="h-6" />
-	<span class="text-gray-400">|</span>
-	<span class="text-sm text-gray-700">Journey Name</span>
-</div>
 
 <div
 	class="flex min-h-screen flex-col text-black md:items-center md:justify-center md:px-4 md:py-8"
@@ -85,7 +74,7 @@
 		<div
 			class="fixed bottom-0 md:static flex flex-col justify-between px-4 pt-12 pb-4 md:px-6 md:pb-6"
 		>
-			<PrimaryButton text="Proceed" onClick={handleRedirect} />
+			<PrimaryButton text="Proceed" onClick={nextStep} />
 
 			<p class="mt-3 text-center text-xs text-gray-500">
 				By proceeding, you are agreeing to the
