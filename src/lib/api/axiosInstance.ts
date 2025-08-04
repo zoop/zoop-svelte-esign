@@ -1,7 +1,16 @@
-// src/lib/api/axiosInstance.ts
+// src/lib/api/axiosInstances.ts
 import axios from "axios";
 
-export const axiosInstance = axios.create({
+export const axiosV4 = axios.create({
+  baseURL: "/api/v4",
+  withCredentials: true,
+  timeout: 120000,
+  headers: {
+    Accept: "application/json",
+  },
+});
+
+export const axiosV5 = axios.create({
   baseURL: "/api/v5",
   withCredentials: true,
   timeout: 120000,
@@ -10,21 +19,18 @@ export const axiosInstance = axios.create({
   },
 });
 
-// Request interceptor
-axiosInstance.interceptors.request.use(
-  (config) => {
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// Add interceptors to both if needed
+[axiosV4, axiosV5].forEach((instance) => {
+  instance.interceptors.request.use(
+    (config) => config,
+    (error) => Promise.reject(error)
+  );
 
-// Response interceptor
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Global error logging
-    console.error("API Error:", error);
-    // You can throw a custom error or toast it here
-    return Promise.reject(error);
-  }
-);
+  instance.interceptors.response.use(
+    (res) => res,
+    (err) => {
+      console.error("API Error:", err);
+      return Promise.reject(err);
+    }
+  );
+});

@@ -1,5 +1,6 @@
 // src/lib/api/callApi.ts
-import { axiosInstance } from "./axiosInstance";
+import type { AxiosInstance } from "axios";
+import { axiosV5 } from "./axiosInstance";
 
 export type HttpMethod = "get" | "post" | "put" | "delete" | "patch";
 
@@ -7,13 +8,17 @@ export async function callApi<T = any>(
   method: HttpMethod,
   url: string,
   params?: any,
-  options: Record<string, any> = {}
+  options: {
+    axiosInstance?: AxiosInstance;
+    headers?: Record<string, any>;
+    [key: string]: any;
+  } = {}
 ): Promise<T> {
-  const isFormData = typeof FormData !== "undefined" && params instanceof FormData;
-
+  const instance = options.axiosInstance || axiosV5;
   const finalHeaders = options.headers || {};
+
   try {
-    const response = await axiosInstance.request<T>({
+    const response = await instance.request<T>({
       method,
       url,
       headers: finalHeaders,
