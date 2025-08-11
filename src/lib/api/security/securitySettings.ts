@@ -1,4 +1,3 @@
-// src/lib/api/security.ts
 import { callApi } from "../callApi";
 
 export function fetchSecuritySettings({ requestId }: { requestId: string }) {

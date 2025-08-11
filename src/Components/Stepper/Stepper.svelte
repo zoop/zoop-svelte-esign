@@ -6,6 +6,7 @@
 
 	import { fetchSecuritySettings } from "../../lib/api/security/securitySettings";
 	import { fetchBrandingInfo } from "../../lib/api/branding/brandingInfo";
+	import { fetchDocumentInfo } from "../../lib/api/documentInfo/documentInfo";
 
 	let currentStep = 0;
 
@@ -33,11 +34,16 @@
 	// 	currentStep = 0;
 	// }
 
-	const requestId = "688b4648beb6410aafb4ef17";
+	const requestId = "6899ca176ec67d7ebe202895";
 
 	const securitySettingsQuery = createQuery({
 		queryKey: ["securitySettings", requestId],
 		queryFn: () => fetchSecuritySettings({ requestId }),
+	});
+
+	const documentInfoQuery = createQuery({
+		queryKey: ["documentInfo", requestId],
+		queryFn: () => fetchDocumentInfo({ requestId }),
 	});
 
 	export const brandingInfoQuery = createQuery({
@@ -51,6 +57,9 @@
 
 	$: if ($securitySettingsQuery.data) {
 		console.log("Security Settings:", $securitySettingsQuery.data);
+	}
+	$: if ($documentInfoQuery.data) {
+		console.log("DOCINFO:", $documentInfoQuery.data);
 	}
 </script>
 

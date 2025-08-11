@@ -112,6 +112,7 @@
 	//	zoom = Math.max(0.5, zoom - 0.25);
 	//	loadPDFfromURL();
 	//}
+	console.log("url", url);
 </script>
 
 <!-- Zoom Controls -->

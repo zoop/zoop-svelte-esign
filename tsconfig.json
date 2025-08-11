@@ -1,0 +1,12 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"types": ["vite/client"],
+		"strict": true,
+		"baseUrl": "."
+	},
+	"include": ["src"],
+	"exclude": ["node_modules"]
+}
