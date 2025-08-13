@@ -1,5 +1,5 @@
 <script>
-	import { Eye, EyeClosed, EyeOff } from "@lucide/svelte";
+	import { Eye, EyeOff } from "@lucide/svelte";
 
 	let aadhaar = "";
 	let show = false;

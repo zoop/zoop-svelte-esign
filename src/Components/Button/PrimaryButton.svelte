@@ -8,6 +8,8 @@
 	export let disabled: boolean = false;
 </script>
 
-<Button on:click={onClick} {type} class={className} {disabled}>
-	{text}
-</Button>
+<div class="w-full flex items-center justify-center">
+	<Button on:click={onClick} {type} class={className} {disabled}>
+		{text}
+	</Button>
+</div>
