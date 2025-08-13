@@ -4,21 +4,20 @@
 	export let resultData: any;
 
 	function downloadPDF(): void {
-		if (!resultData?.document?.signed_url) {
+		if (!resultData?.data?.document?.signed_url) {
 			alert("Signed URL not available.");
 			return;
 		}
 
 		// Create an invisible link and trigger download
 		const link = document.createElement("a");
-		link.href = resultData.document.signed_url;
+		link.href = resultData?.data?.document?.signed_url;
 		link.download = "signed-document.pdf";
 		link.target = "_blank"; // optional: open in new tab instead
 		document.body.appendChild(link);
 		link.click();
 		document.body.removeChild(link);
 	}
-	console.log(resultData);
 </script>
 
 <div class="flex items-center justify-center min-h-screen bg-opacity-75 p-4">
@@ -56,7 +55,7 @@
 			text="Download PDF"
 			onClick={downloadPDF}
 			className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-6"
-			disabled={!resultData?.signed_url}
+			disabled={!resultData?.data?.document?.signed_url}
 		/>
 
 		<!-- Optional Debug Section -->

@@ -4,6 +4,7 @@
 	import SuccessComponent from "../SuccessScreen/SuccessScreen.svelte";
 	import FailureComponent from "../FailureScreen/FailureScreen.svelte";
 	import { esignDoc } from "../../lib/api/esignDoc/esignDoc";
+	import PrimaryButton from "../Button/PrimaryButton.svelte";
 
 	type Stage = "signing" | "loading" | "success" | "error";
 
@@ -41,7 +42,7 @@
 	let stage: Stage = "signing";
 	let resultData: EsignResponseData | null = null;
 
-	const requestId: string = "689b1a0f3be2becded3c3466";
+	const requestId: string = "689c6332dfadc7b499b06661";
 
 	const dispatch = createEventDispatcher();
 	const fonts: string[] = [
@@ -137,16 +138,41 @@
 		};
 		document.head.appendChild(script);
 	});
+
+	let uploadedSignature: string | null = null;
+
+	function handleFileUpload(event: Event): void {
+		const file = (event.target as HTMLInputElement)?.files?.[0];
+		if (!file) return;
+
+		const reader = new FileReader();
+		reader.onload = () => {
+			uploadedSignature = reader.result as string; // Base64 string
+		};
+		reader.readAsDataURL(file);
+	}
+
+	async function saveUploadedSignature(): Promise<void> {
+		if (!uploadedSignature) {
+			alert("Please upload an image first.");
+			return;
+		}
+
+		stage = "loading";
+		const resp: EsignResponse = await esignDoc(requestId, uploadedSignature);
+		stage = resp.status === "success" ? "success" : "error";
+		resultData = resp.data;
+	}
 </script>
 
 {#if stage === "signing"}
 	<!-- Your existing signature box -->
 	<div
-		class="bg-black bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center p-4"
+		class=" bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center p-4"
 	>
 		<div class="bg-white rounded-2xl shadow-lg w-full max-w-lg p-8 relative">
 			<!-- Close button -->
-			<button
+			<!-- <button
 				type="button"
 				class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
 				on:click={closeModal}
@@ -159,7 +185,7 @@
 						stroke-linecap="round"
 					/>
 				</svg>
-			</button>
+			</button> -->
 
 			<!-- Icon -->
 			<div class="flex justify-center mb-6">
@@ -232,7 +258,7 @@
 			</div>
 
 			<!-- Tab Content -->
-			<div class="min-h-[300px]">
+			<div class="min-h-[250px]">
 				{#if activeTab === "type"}
 					<div class="space-y-4">
 						<select
@@ -257,15 +283,11 @@
 						>
 							{signatureText || "Preview will appear here"}
 						</div>
-
-						<button
-							type="button"
-							on:click={saveTypedSignature}
-							class="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+						<PrimaryButton
+							text="Save Signature"
+							onClick={saveTypedSignature}
 							disabled={!signatureText.trim()}
-						>
-							Save Typed Signature
-						</button>
+						/>
 					</div>
 				{:else if activeTab === "draw"}
 					<div class="space-y-4">
@@ -285,58 +307,72 @@
 							</div>
 
 							<div class="flex gap-3">
-								<button
-									type="button"
-									on:click={clearCanvas}
-									class="flex-1 px-4 py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+								<PrimaryButton
+									text="Clear"
+									onClick={clearCanvas}
 									disabled={!isLibraryLoaded}
-								>
-									Clear
-								</button>
-								<button
+								/>
+								<PrimaryButton
+									text="Save Signature"
 									type="button"
-									on:click={saveDrawnSignature}
-									class="flex-1 bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+									onClick={saveDrawnSignature}
 									disabled={!isLibraryLoaded}
-								>
-									Save Signature
-								</button>
+								/>
 							</div>
 						{/if}
 					</div>
 				{:else if activeTab === "upload"}
-					<div class="text-center py-12">
-						<div
-							class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4"
+					<div class="space-y-4">
+						<!-- Upload box -->
+						<label
+							class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition"
 						>
-							<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-								<path
-									d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15"
-									stroke="#6B7280"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
+							<div
+								class="flex flex-col items-center justify-center pt-5 pb-6 text-center"
+							>
+								<svg
+									class="w-8 h-8 mb-3 text-gray-400"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+									xmlns="http://www.w3.org/2000/svg"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4-4m0 0l-4 4m4-4v12"
+									></path>
+								</svg>
+								<p class="text-sm text-gray-500">
+									<span class="font-semibold">Click to upload</span> or drag and
+									drop
+								</p>
+								<p class="text-xs text-gray-400">PNG, JPG, JPEG (max 5MB)</p>
+							</div>
+							<input
+								type="file"
+								accept="image/*"
+								on:change={handleFileUpload}
+								class="hidden"
+							/>
+						</label>
+
+						<!-- Preview -->
+						{#if uploadedSignature}
+							<div class="flex flex-col items-center space-y-4">
+								<img
+									src={uploadedSignature}
+									alt="Uploaded Signature Preview"
+									class="max-h-32 border rounded-lg shadow-sm"
 								/>
-								<path
-									d="M7 10L12 5L17 10"
-									stroke="#6B7280"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
+								<PrimaryButton
+									text="Save Signature"
+									type="button"
+									onClick={saveUploadedSignature}
 								/>
-								<path
-									d="M12 5V15"
-									stroke="#6B7280"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								/>
-							</svg>
-						</div>
-						<h3 class="text-lg font-medium text-gray-900 mb-2">
-							Upload Coming Soon
-						</h3>
-						<p class="text-gray-500">Upload feature coming soon.</p>
+							</div>
+						{/if}
 					</div>
 				{/if}
 			</div>

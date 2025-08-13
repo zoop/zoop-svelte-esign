@@ -68,7 +68,7 @@
 		espFormRef.submit();
 	}
 
-	const requestId = "689b1a0f3be2becded3c3466";
+	const requestId = "689c6332dfadc7b499b06661";
 
 	const documentInfoQuery = createQuery({
 		queryKey: ["documentInfo", requestId],
@@ -472,11 +472,11 @@
 		/>
 
 		<!-- Error State -->
-		{#if error}
+		<!-- {#if error}
 			<div class="mb-6 rounded-lg border border-red-200 bg-red-50 p-6">
 				<p class="text-sm text-red-800">{error}</p>
 			</div>
-		{/if}
+		{/if} -->
 	</div>
 </div>
 
