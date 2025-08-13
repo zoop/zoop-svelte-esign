@@ -39,12 +39,14 @@
 		message: `OTP has been sent to ${sender}`,
 	};
 
-	let mediaStream: MediaStream | null = null;
+	const requestId = "689b1a0f3be2becded3c3466";
+
+	// let mediaStream: MediaStream | null = null;
 	const brandingContext = get(brandingStore);
 
-	const handleChange = (val: string) => {
-		otp = val;
-	};
+	// const handleChange = (val: string) => {
+	// 	otp = val;
+	// };
 
 	// const requestCameraPermission = async () => {
 	// 	try {
@@ -61,7 +63,7 @@
 		try {
 			resendOtpLoading = true;
 			const resp = await callApi("put", "/otp/resend", {
-				requestId: request_id,
+				requestId: requestId,
 				otp_mode,
 				role,
 			});
@@ -98,7 +100,7 @@
 		try {
 			loading = true;
 			const resp = await callApi("put", "/otp/verify", {
-				requestId: request_id,
+				requestId: requestId,
 				otp,
 				otp_mode: "EMAIL",
 				role,
@@ -109,7 +111,7 @@
 			} else {
 				formError = false;
 				formMessage = "";
-				if (!auth_type) drawSignatureModalFlag = true;
+				drawSignatureModalFlag = true;
 			}
 		} catch (err: any) {
 			formError = true;
@@ -138,6 +140,7 @@
 	// 	}
 	// 	clearInterval(countdownInterval);
 	// });
+	console.log("authType", auth_type);
 </script>
 
 {#if !drawSignatureModalFlag}

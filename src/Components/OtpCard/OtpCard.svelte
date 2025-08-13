@@ -21,9 +21,7 @@
 	let intervalId: ReturnType<typeof setInterval>;
 	let formState = { error: false, message: "" };
 
-	// Subscriptions
-	$: brandingContext = $brandingStore;
-	$: sharedData = $gatewayStore.sharedData;
+	const requestId = "689b1a0f3be2becded3c3466";
 
 	onMount(() => {
 		startCountdown();
@@ -50,7 +48,7 @@
 
 		try {
 			const resp: any = await callApi("put", "/otp/verify", {
-				requestId: request_id,
+				requestId: requestId,
 				otp,
 				otp_mode,
 				role,
@@ -101,49 +99,80 @@
 	}
 </script>
 
-<div class="rounded-xl border bg-white p-7 shadow-md w-full max-w-md mx-auto">
-	<h2 class="text-lg font-semibold mb-2">Verify OTP</h2>
-	<p class="text-sm text-gray-600 mb-4">
-		OTP has been sent to <span class="font-medium">{sender}</span>
-	</p>
+<div class="flex items-center justify-center min-h-screen bg-opacity-75 p-4">
+	<div class="bg-white rounded-2xl shadow-lg w-full max-w-md p-8 relative">
+		<div class="flex justify-center mb-6">
+			<div
+				class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
+			>
+				<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+					<path
+						d="M12 2L13.09 8.26L22 9L13.09 9.74L12 16L10.91 9.74L2 9L10.91 8.26L12 2Z"
+						fill="#10B981"
+					/>
+					<circle cx="12" cy="12" r="2" fill="#10B981" />
+				</svg>
+			</div>
+		</div>
 
-	<Input
-		id="otp"
-		type="text"
-		placeholder="Enter 6-digit OTP"
-		bind:value={otp}
-		maxlength={6}
-	/>
+		<!-- Title -->
+		<h2 class="text-xl font-semibold text-gray-900 text-center mb-2">
+			Verify with OTP
+		</h2>
 
-	{#if formState.message}
-		<p
-			class={formState.error
-				? "text-red-600 text-sm mt-2"
-				: "text-green-600 text-sm mt-2"}
-		>
-			{formState.message}
+		<!-- Description -->
+		<p class="text-sm text-gray-600 text-center mb-8">
+			Enter the 6-digit OTP sent to your mobile number ending with
+			<span class="font-medium">****{sender.slice(-4)}</span>. The code is valid
+			for 10 minutes.
 		</p>
-	{/if}
 
-	<div class="mt-4 flex items-center justify-between">
-		<PrimaryButton
-			text="Verify"
-			onClick={() => verifyOTP(otp)}
-			disabled={otp.length !== 6}
-		/>
+		<!-- OTP Input -->
+		<div class="mb-6">
+			<Input
+				id="otp"
+				type="text"
+				class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-center text-lg font-mono tracking-widest {formState.error
+					? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+					: ''}"
+				placeholder="Enter 6-digit OTP"
+				bind:value={otp}
+				maxlength={6}
+			/>
 
-		<button
-			class="text-sm text-purple-600 hover:underline disabled:opacity-50"
-			on:click={resendOTP}
-			disabled={countdown > 0 || resendOtpLoading}
-		>
-			{#if countdown > 0}
-				Resend OTP in {countdown}s
-			{:else if resendOtpLoading}
-				Sending...
-			{:else}
-				Resend OTP
+			{#if formState.message}
+				<p
+					class={formState.error
+						? "text-red-500 text-sm mt-2 text-center"
+						: "text-green-600 text-sm mt-2 text-center"}
+				>
+					{formState.message}
+				</p>
 			{/if}
-		</button>
+		</div>
+
+		<!-- Resend Note -->
+		<p class="text-xs text-gray-500 text-center mb-6">
+			Did not receive an OTP?
+			<PrimaryButton
+				text={countdown > 0
+					? `Resend in ${String(Math.floor(countdown / 60)).padStart(2, "0")}:${String(countdown % 60).padStart(2, "0")}`
+					: resendOtpLoading
+						? "Sending..."
+						: "Resend OTP"}
+				onClick={resendOTP}
+				className="text-blue-600 font-medium hover:underline  border-none p-0 inline"
+				disabled={countdown > 0 || resendOtpLoading}
+			/>
+		</p>
+
+		<!-- Verify Button -->
+		<div class="w-full flex items-center justify-center">
+			<PrimaryButton
+				text="Verify"
+				onClick={() => verifyOTP(otp)}
+				disabled={otp.length !== 6}
+			/>
+		</div>
 	</div>
 </div>

@@ -68,7 +68,7 @@
 		espFormRef.submit();
 	}
 
-	const requestId = "6899ca176ec67d7ebe202895";
+	const requestId = "689b1a0f3be2becded3c3466";
 
 	const documentInfoQuery = createQuery({
 		queryKey: ["documentInfo", requestId],
@@ -274,7 +274,7 @@
 						: data.signer_name,
 					sign_version: documentInfo.sign_version ?? "",
 					photo_capture: documentInfo.security_settings?.photo_capture ?? "",
-					verified: resp.verified ? "true" : "false",
+					verified: resp.verified ? true : false,
 					sender: resp.verified ? "" : data.sender,
 					ip: resp.verified ? "" : data.ip,
 					auth_type: documentInfo.esign_type ?? "",
@@ -411,28 +411,34 @@
 					signBoxes={$documentInfoQuery.data.document.sign}
 					zoom={1.5}
 				/>
-				<div class="z-[2]">
+				<div
+					class="z-[2] flex items-center justify-between py-2 bg-white fixed bottom-0 w-full"
+				>
 					<div>
 						{#if !$documentInfoQuery.data.esign_type}
 							<!-- No content -->
 						{:else if $documentInfoQuery.data.esign_type === "AADHAAR"}
-							<div class="ml-2 mr-2">
-								<InfoIcon />
-							</div>
-							<div>
-								By proceeding you authorize to be redirected to ESP portal for
-								electronically signing the documents as per CCA guidelines
+							<div class="flex text-xs">
+								<div class="ml-2 mr-2">
+									<InfoIcon class="h-4 w-4" />
+								</div>
+								<div>
+									By proceeding you authorize to be redirected to ESP portal for
+									electronically signing the documents as per CCA guidelines
+								</div>
 							</div>
 						{:else}
-							<div class="ml-2 mr-2">
-								<InfoIcon />
-							</div>
-							<div>
-								By proceeding you will receive
-								{$documentInfoQuery.data.esign_type === "EMAIL"
-									? "an email"
-									: `a ${$documentInfoQuery.data.esign_type.toLowerCase()} message`}
-								with OTP
+							<div class="flex text-xs">
+								<div class="ml-2 mr-2">
+									<InfoIcon class="h-4 w-4" />
+								</div>
+								<div>
+									By proceeding you will receive
+									{$documentInfoQuery.data.esign_type === "EMAIL"
+										? "an email"
+										: `a ${$documentInfoQuery.data.esign_type.toLowerCase()} message`}
+									with OTP
+								</div>
 							</div>
 						{/if}
 					</div>

@@ -7,16 +7,15 @@
 	import { fetchSecuritySettings } from "../../lib/api/security/securitySettings";
 	import { fetchBrandingInfo } from "../../lib/api/branding/brandingInfo";
 	import { fetchDocumentInfo } from "../../lib/api/documentInfo/documentInfo";
+	import TransactionComplete from "../Transaction/TransactionComplete.svelte";
+	import TransactionFailure from "../TransactionFailure/TransactionFailure.svelte";
 
+	const requestId = "689b1a0f3be2becded3c3466";
+
+	// Stepper logic
 	let currentStep = 0;
-
-	let CurrentStepComponent: any;
-
-	// Array of step components
 	const steps = [Home, Viewer, Esp];
-
-	// Computed current component
-	$: CurrentStepComponent = steps?.[currentStep] || null;
+	$: CurrentStepComponent = steps[currentStep] || null;
 
 	function nextStep() {
 		if (currentStep < steps.length - 1) {
@@ -24,21 +23,25 @@
 		}
 	}
 
-	// function previousStep() {
-	// 	if (currentStep > 0) {
-	// 		currentStep -= 1;
-	// 	}
-	// }
-
-	// function resetSteps() {
-	// 	currentStep = 0;
-	// }
-
-	const requestId = "6899ca176ec67d7ebe202895";
-
+	// Queries
 	const securitySettingsQuery = createQuery({
 		queryKey: ["securitySettings", requestId],
-		queryFn: () => fetchSecuritySettings({ requestId }),
+		queryFn: async () => {
+			try {
+				return await fetchSecuritySettings({ requestId });
+			} catch (err: any) {
+				const resp = err?.response?.data;
+				// Special case: treat "Transaction completed" as valid data, not error
+				if (
+					resp?.response_message?.includes(
+						"Transaction completed. Please create new transaction."
+					)
+				) {
+					return resp;
+				}
+				throw err;
+			}
+		},
 	});
 
 	const documentInfoQuery = createQuery({
@@ -46,47 +49,52 @@
 		queryFn: () => fetchDocumentInfo({ requestId }),
 	});
 
-	export const brandingInfoQuery = createQuery({
+	const brandingInfoQuery = createQuery({
 		queryKey: ["brandingInfo", requestId],
 		queryFn: () => fetchBrandingInfo({ requestId }),
 	});
 
-	$: if ($brandingInfoQuery.data) {
-		console.log("Branding info:", $brandingInfoQuery.data);
-	}
+	// Derived states
+	$: branding = $brandingInfoQuery.data?.branding || {};
 
-	$: if ($securitySettingsQuery.data) {
-		console.log("Security Settings:", $securitySettingsQuery.data);
-	}
-	$: if ($documentInfoQuery.data) {
-		console.log("DOCINFO:", $documentInfoQuery.data);
-	}
+	// Check if transaction completed — decide as soon as securitySettingsQuery finishes
+	$: isTransactionComplete =
+		!!$securitySettingsQuery.data?.response_message?.includes(
+			"Transaction completed"
+		);
+
+	// If not completed, check for errors
+	$: hasError =
+		!isTransactionComplete &&
+		($securitySettingsQuery.isError ||
+			$documentInfoQuery.isError ||
+			$brandingInfoQuery.isError);
+
+	// Error message to show
+	$: errorMessage =
+		$securitySettingsQuery.error?.message ||
+		$documentInfoQuery.error?.message ||
+		$brandingInfoQuery.error?.message ||
+		"Request failed";
 </script>
 
-{#if $securitySettingsQuery.isError}
-	<p class="text-center text-red-500">
-		Error: {$securitySettingsQuery.error.message}
-	</p>
-{/if}
+<!-- Transaction Completed Screen -->
+{#if isTransactionComplete}
+	<TransactionComplete {branding} />
 
-{#if CurrentStepComponent}
+	<!-- Generic Failure Screen -->
+{:else if hasError}
+	<TransactionFailure
+		error_msg={errorMessage}
+		request_id={requestId}
+		{branding}
+	/>
+
+	<!-- Stepper -->
+{:else if CurrentStepComponent}
 	<svelte:component this={CurrentStepComponent} {nextStep} />
+
+	<!-- Fallback -->
 {:else}
-	<p>No step found.</p>
+	<p class="text-center">No step found.</p>
 {/if}
-
-<!-- Navigation Buttons -->
-<!-- <div class="mt-4 space-x-2">
-	<button on:click={previousStep} disabled={currentStep === 0}>
-		Previous
-	</button>
-	<button on:click={nextStep} disabled={currentStep === steps.length - 1}>
-		Next
-	</button>
-	<button on:click={resetSteps}>Reset</button>
-</div> -->
-
-<!-- Optional Step Indicator -->
-<!-- <p class="text-sm mt-2 text-gray-500">
-	Step {currentStep + 1} of {steps.length}
-</p> -->

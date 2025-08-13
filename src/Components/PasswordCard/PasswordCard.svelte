@@ -66,65 +66,97 @@
 	}
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
-	<div
-		class="flex flex-col justify-center px-7 py-6 text-sm rounded-xl border border-primary-grey-light shadow-md max-w-[550px] bg-white"
-	>
-		<div
-			class="pb-2.5 text-base font-semibold border-b border-[#D1D5DB] text-neutral-800"
-		>
-			Enter Password
-		</div>
-
-		<div class="mt-3 text-neutral-800 leading-5">
-			Passcode is necessary to access
-			<span class="font-semibold text-neutral-800">
-				{passwordProtection?.document_name ?? "this document"}
-			</span>
-		</div>
-
-		<div class="relative mt-4">
-			<div
-				class="flex relative flex-col text-xs bg-neutral-100 text-neutral-400"
-			>
-				<input
-					type={showPassword ? "text" : "password"}
-					bind:value={password}
-					placeholder="Password"
-					on:focus={() => (incorrectPasswordError = "")}
-					class="px-4 py-3 w-full bg-gray-50 rounded-lg border border-gray-400"
-				/>
+<div class="flex items-center justify-center min-h-screen p-4">
+	<form on:submit|preventDefault={handleSubmit}>
+		<div class="bg-white rounded-2xl shadow-lg w-full max-w-md p-8 relative">
+			<!-- Icon -->
+			<div class="flex justify-center mb-6">
 				<div
-					class="absolute right-0 mr-3 flex items-center cursor-pointer top-3"
-					on:click={togglePasswordVisibility}
+					class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
 				>
-					{#if showPassword}
-						<EyeIcon size={20} />
-					{:else}
-						<EyeClosed size={20} />
-					{/if}
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+						<path
+							d="M18 11H6C4.89543 11 4 11.8954 4 13V19C4 20.1046 4.89543 21 6 21H18C19.1046 21 20 20.1046 20 19V13C20 11.8954 19.1046 11 18 11Z"
+							stroke="#10B981"
+							stroke-width="2"
+						/>
+						<path
+							d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11"
+							stroke="#10B981"
+							stroke-width="2"
+						/>
+						<circle cx="12" cy="16" r="2" fill="#10B981" />
+					</svg>
 				</div>
 			</div>
 
-			{#if validationError}
-				<div class="text-xs text-red-400 mt-1">{validationError}</div>
-			{/if}
-			{#if incorrectPasswordError}
-				<div class="text-xs text-red-400 mt-1">{incorrectPasswordError}</div>
-			{/if}
-		</div>
+			<!-- Title -->
+			<h2 class="text-xl font-semibold text-gray-900 text-center mb-2">
+				Enter Password
+			</h2>
 
-		<div class="mt-5 text-xs text-neutral-600">
-			Facing an issue? Contact document owner for support.
-		</div>
+			<!-- Description -->
+			<p class="text-sm text-gray-600 text-center mb-8">
+				Passcode is necessary to access
+				<span class="font-medium text-gray-900">
+					{passwordProtection?.document_name ?? "this document"}
+				</span>
+			</p>
 
-		<div class="flex justify-center gap-4 pt-4">
+			<!-- Password Input -->
+			<div class="mb-6">
+				<label class="block text-sm font-medium text-gray-700 mb-2">
+					Password
+				</label>
+				<div class="relative">
+					<input
+						type={showPassword ? "text" : "password"}
+						bind:value={password}
+						placeholder="Enter password"
+						on:focus={() => (incorrectPasswordError = "")}
+						class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors {validationError ||
+						incorrectPasswordError
+							? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+							: ''}"
+					/>
+					<button
+						type="button"
+						class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+						on:click={togglePasswordVisibility}
+					>
+						{#if showPassword}
+							<EyeIcon size={20} />
+						{:else}
+							<EyeClosed size={20} />
+						{/if}
+					</button>
+				</div>
+
+				{#if validationError}
+					<p class="text-red-500 text-sm mt-2">{validationError}</p>
+				{/if}
+				{#if incorrectPasswordError}
+					<p class="text-red-500 text-sm mt-2">{incorrectPasswordError}</p>
+				{/if}
+			</div>
+
+			<!-- Support Note -->
+			<p class="text-xs text-gray-500 text-center mb-6">
+				Facing an issue?
+				<button type="button" class="text-blue-600 font-medium hover:underline">
+					Contact document owner
+				</button>
+				for support.
+			</p>
+
+			<!-- Submit Button -->
 			<PrimaryButton
 				type="submit"
-				text="Proceed"
+				text={loading ? "Processing..." : "Proceed"}
 				onClick={handleSubmit}
+				className="w-full py-3 rounded-lg font-medium  disabled:opacity-50 disabled:cursor-not-allowed"
 				disabled={!password || loading}
 			/>
 		</div>
-	</div>
-</form>
+	</form>
+</div>

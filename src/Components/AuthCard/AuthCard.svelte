@@ -116,124 +116,131 @@
 
 {#if !formCardFlag}
 	<!-- Auth Form Card UI (same as React, but in Svelte) -->
-	<div
-		class="flex max-w-full items-center justify-center text-center text-xs text-greyscale-dark2 font-web-text-small-semibold"
-	>
-		<div
-			class="rounded-lg bg-white shadow-[-4px_4px_12px_2px_rgba(21,_48,_112,_0.04)] max-w-[456px] min-w-[200px] m-auto"
-		>
-			<div class={`inset-0 ${paddingClass} overflow-hidden`}>
-				<h2
-					class="text-base font-medium w-[212px] h-[23px] whitespace-nowrap text-ellipsis overflow-hidden"
+	<div class="flex items-center justify-center min-h-screen p-4">
+		<div class="bg-white rounded-2xl shadow-lg w-full max-w-md p-8 relative">
+			<!-- Icon -->
+			<div class="flex justify-center mb-6">
+				<div
+					class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
 				>
-					{role === UserRole.APPROVER
-						? "Approver Authentication"
-						: "Signer Authentication"}
-				</h2>
-
-				<p class="p-4 h-6 text-primary-grey-dark">
-					Confirm {auth_type === AuthType.EMAIL
-						? "Email ID"
-						: "WhatsApp Number"} for Verification
-				</p>
-
-				<div
-					class="w-[401px] h-px border-t border-primary-grey-light my-4 mx-auto"
-				></div>
-
-				<div class={`mx-auto justify-center ${widthClass}`}>
-					Please enter the invited {auth_type === AuthType.EMAIL
-						? "Email ID"
-						: "WhatsApp Number"}
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+						<path
+							d="M3 8L10.89 13.26C11.2187 13.4793 11.6049 13.5963 12 13.5963C12.3951 13.5963 12.7813 13.4793 13.11 13.26L21 8M5 19H19C19.5304 19 20.0391 18.7893 20.4142 18.4142C20.7893 18.0391 21 17.5304 21 17V7C21 6.46957 20.7893 5.96086 20.4142 5.58579C20.0391 5.21071 19.5304 5 19 5H5C4.46957 5 3.96086 5.21071 3.58579 5.58579C3.21071 5.96086 3 6.46957 3 7V17C3 17.5304 3.21071 18.0391 3.58579 18.4142C3.96086 18.7893 4.46957 19 5 19Z"
+							stroke="#10B981"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
 				</div>
+			</div>
 
-				<div class="mt-2 text-xl font-semibold">
-					Enter {auth_type === AuthType.EMAIL ? "Email" : "WhatsApp Number"}
-				</div>
+			<!-- Title -->
+			<h2 class="text-xl font-semibold text-gray-900 text-center mb-2">
+				{role === UserRole.APPROVER
+					? "Approver Authentication"
+					: "Signer Authentication"}
+			</h2>
 
-				<div class="flex flex-col gap-2">
-					<Input
-						type="text"
-						class="w-full mt-4"
-						placeholder={hintText}
-						bind:value={
-							formState[auth_type === AuthType.EMAIL ? "email" : "whatsapp"]
+			<!-- Description -->
+			<p class="text-sm text-gray-600 text-center mb-8">
+				Enter the {auth_type === AuthType.EMAIL
+					? "email address"
+					: "WhatsApp number"} ending with
+				<span class="font-medium">
+					{auth_type === AuthType.EMAIL
+						? `****${sender.slice(-8)}`
+						: `****${sender.slice(-4)}`}
+				</span>. The verification code will be sent within 10 minutes.
+			</p>
+
+			<!-- Input Field -->
+			<div class="mb-6">
+				<label class="block text-sm font-medium text-gray-700 mb-2">
+					{auth_type === AuthType.EMAIL ? "Email Address" : "WhatsApp Number"}
+				</label>
+				<input
+					type={auth_type === AuthType.EMAIL ? "email" : "tel"}
+					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors {formState.error
+						? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+						: ''}"
+					placeholder={hintText}
+					bind:value={
+						formState[auth_type === AuthType.EMAIL ? "email" : "whatsapp"]
+					}
+				/>
+				{#if formState.error}
+					<p class="text-red-500 text-sm mt-2">{formState.message}</p>
+				{/if}
+			</div>
+
+			<!-- Verification Note -->
+			<p class="text-xs text-gray-500 text-center mb-6">
+				Did not receive an {auth_type === AuthType.EMAIL ? "email" : "message"}?
+				<button class="text-blue-600 font-medium hover:underline">
+					Resend in 00:30
+				</button>
+			</p>
+
+			<!-- Send Button -->
+			<div class="flex items-center justify-center">
+				<PrimaryButton
+					text="Send Otp"
+					onClick={() => {
+						const validEmail =
+							auth_type === AuthType.EMAIL &&
+							formState.email.toLowerCase() === sender.toLowerCase();
+						const validWhatsapp =
+							auth_type === AuthType.WHATSAPP && formState.whatsapp === sender;
+
+						if (validEmail || validWhatsapp) {
+							sendOtp();
+						} else {
+							formState = {
+								...formState,
+								error: true,
+								message:
+									auth_type === AuthType.EMAIL
+										? "Incorrect email address"
+										: "Incorrect WhatsApp number",
+							};
 						}
-						error={formState.error}
-					/>
-
-					{#if formState.error}
-						<p class="text-red-500 text-sm">{formState.message}</p>
-					{/if}
-				</div>
-
-				<div class="text-sm text-primary-grey-default mt-4 mb-4">
-					Verify your {auth_type === AuthType.EMAIL ? "email" : "WhatsApp"} to proceed
-					with {esignMap[esign_type]} eSign
-				</div>
-
-				<div class="flex justify-center">
-					<PrimaryButton
-						text="Send Otp"
-						onClick={() => {
-							const validEmail =
-								auth_type === AuthType.EMAIL &&
-								formState.email.toLowerCase() === sender.toLowerCase();
-							const validWhatsapp =
-								auth_type === AuthType.WHATSAPP &&
-								formState.whatsapp === sender;
-							console.log("check---", formState.email.toLowerCase());
-							console.log("hell", sender.toLowerCase());
-							if (validEmail || validWhatsapp) {
-								sendOtp();
-							} else {
-								formState = {
-									...formState,
-									error: true,
-									message:
-										auth_type === AuthType.EMAIL
-											? "Incorrect email ID"
-											: "Incorrect WhatsApp Number",
-								};
-							}
-						}}
-					/>
-				</div>
-
-				<div
-					class="w-[401px] h-px border-t border-primary-grey-light my-8 mx-auto"
-				></div>
-
-				<p class="text-xs text-center">
-					Current Time : {dateStr}
+					}}
+					disabled={!formState[
+						auth_type === AuthType.EMAIL ? "email" : "whatsapp"
+					]}
+				/>
+			</div>
+			<!-- Footer -->
+			<div class="mt-8 pt-6 border-t border-gray-200">
+				<p class="text-xs text-gray-500 text-center mb-2">
+					Current Time: {dateStr}
 				</p>
 
-				<p class="text-3xs text-center w-[90%] text-greyscale-dark-3 mx-auto">
+				<p class="text-xs text-gray-500 text-center leading-relaxed">
 					By proceeding, I agree to the
 					<a
 						href={brandingContext.terms_and_conditions_link}
-						class="font-medium"
+						class="text-blue-600 font-medium hover:underline"
 						target="_blank"
 						rel="noreferrer"
-						style="color: {brandingContext.primary_color};"
 					>
 						Terms and Conditions
 					</a>
 					and
 					<a
 						href="https://stack.zoop.one/privacy-policy"
-						class="font-medium"
+						class="text-blue-600 font-medium hover:underline"
 						target="_blank"
 						rel="noreferrer"
-						style="color: {brandingContext.primary_color};"
 					>
 						Privacy Policy
 					</a>
 				</p>
 
 				{#if ip}
-					<p class="text-3xs text-primary-grey-default text-center pt-2">
-						IP Address : {ip}
+					<p class="text-xs text-gray-400 text-center mt-2">
+						IP Address: {ip}
 					</p>
 				{/if}
 			</div>
